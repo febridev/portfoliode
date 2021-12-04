@@ -1,6 +1,7 @@
 #import libraries
 import mysql.connector
 import os
+import pandas as pd
 from dotenv import load_dotenv
 
 #load .env file
@@ -12,6 +13,14 @@ dbcondemo = mysql.connector.connect(
     port=os.getenv('portdbdemo'),
     user=os.getenv('userdbdemo'),
     passwd=os.getenv('passdbdemo')
+)
+
+# #Connection String dbdemo
+dbcondwh = mysql.connector.connect(
+    host=os.getenv('hostdbdwh'),
+    port=os.getenv('portdbdwh'),
+    user=os.getenv('userdbdwh'),
+    passwd=os.getenv('passdbdwh')
 )
 
 # Check Connection Is Open
@@ -26,16 +35,24 @@ dbcondemo = mysql.connector.connect(
 #     print('Close')
 
 
-#Function Get Data From DB Demo Table 
+#Function Get Data From DB Demo Table teomjobgrade
 def get_teomjobgrade():
     cursor = dbcondemo.cursor()
-    sqltext = "select * from dbdemo.teomjobgrade;"
+    sqltext = "select grade_code,gradecategory_code,grade_name from dbdemo.teomjobgrade;"
     cursor.execute(sqltext)
     result = cursor.fetchall()
     dbcondemo.close()
     return result
 
+#Function Insert Data To DB DWH Table tdimjobgrade
+def insert_tdimjobgrade():
+    pass
+
+
 if __name__ == '__main__':
+    # key = "grade_code"
+    # rd = dict()
     for data in get_teomjobgrade():
-        print(data[0])
+        # rd[key] = data[0]
+        print(data)
     
