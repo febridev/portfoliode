@@ -12,8 +12,8 @@ hostdbdemo = os.getenv('hostdbdemo')
 portdbdemo = os.getenv('portdbdemo')
 userdbdemo = os.getenv('userdbdemo')
 passdbdemo = os.getenv('passdbdemo')
-dbdemoname = "dbnemu"
-# dbdemoname = os.getenv('dbdemoname')
+# dbdemoname = "dbnemu"
+dbdemoname = os.getenv('dbdemoname')
 
 #Credential DB DWH
 hostdbdwh = os.getenv('hostdbdwh')
@@ -39,8 +39,10 @@ except OperationalError:
     print("Wrong Username Or Password!! (Error Code : OperationalError")
 except InterfaceError:
     print("Host Not Found !! (Error Code : InterfaceError)")
+    exit()
 except ProgrammingError:
-    print("Database Not Found (Error Code : ProgrammingError)")
+    print("Database Not Found !! (Error Code : ProgrammingError)")
+    exit()
 
 
 
