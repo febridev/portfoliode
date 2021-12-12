@@ -42,6 +42,9 @@ def etl_teomjobgrade():
         esql = pd.read_sql(sqltext,dbdemo_engine)
         #set data to dataframe
         df_esql = pd.DataFrame(esql)
+        
+        #remove Duplicate
+        df_esql = df_esql.drop_duplicates()
 
         #insert into tdimjobgrade dbddwh
         try:
