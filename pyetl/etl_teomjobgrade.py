@@ -46,25 +46,74 @@ def etl_teomjobgrade():
         #remove Duplicate
         df_esql = df_esql.drop_duplicates()
 
+
+        # compare data terbaru antara dbddemo dan dbdwh
+        # Connect ke db dwh
+        dbdwh_engine = sqlalchemy.create_engine(connection_dbdwh)
+        dbdwh_engine.connect()
+        sqltext = "select grade_code,gradecategory_code,grade_name from tdimjobgrade"
+
+        #execute ke db dwh
+        dsql = pd.read_sql(sqltext,dbdwh_engine)
+        dwhsql = pd.DataFrame(dsql)
+
+        #proses cek ada data baru di dbdemo base on db dwh 
+        cdf = pd.concat([df_esql,dwhsql])
+        cdf = cdf.reset_index(drop=True)
+        cdf_group = cdf.groupby(list(cdf.columns))
+        dx = [x[0] for x in cdf_group.groups.values() if len(x) == 1]
+
+        #hasil cek jika ada data baru 
+        if (len(dx) > 0):
+            print("Have New Data")
+            print(dx)
+            print(df_esql)
+            #insert into tdimjobgrade dbddwh
+            try:
+                #Test Connection dbdwh
+                dbdwh_engine = sqlalchemy.create_engine(connection_dbdwh)
+                dbdwh_engine.connect()
+                dfi = cdf.reindex(dx)
+                dfi.to_sql("tdimjobgrade",con = connection_dbdwh, if_exists = 'append', index = False)
+                print("Successfully Insert To tdimjobgrade")
+                #Close Connection
+                dbdemo_engine.dispose()
+                dbdwh_engine.dispose()
+            except OperationalError:
+                print("Wrong Username Or Password!! dbdwh_engine (Error Code : OperationalError)")
+                exit()
+            except InterfaceError:
+                print("Host Not Found !! dbdwh_engine (Error Code : InterfaceError)")
+                exit()
+            except ProgrammingError:
+                print("Database Not Found !! dbdwh_engine (Error Code : ProgrammingError)")
+                exit()
+        else:
+            print("No New Data!!") 
+            #print(cdf.reindex(dx))
+        
+        # print(len(dx))
+
+
         #insert into tdimjobgrade dbddwh
-        try:
-            #Test Connection dbdwh
-            dbdwh_engine = sqlalchemy.create_engine(connection_dbdwh)
-            dbdwh_engine.connect()
-            df_esql.to_sql("tdimjobgrade",con = connection_dbdwh, if_exists = 'append', index = False)
-            print("Successfully Insert To tdimjobgrade")
-            #Close Connection
-            dbdemo_engine.dispose()
-            dbdwh_engine.dispose()
-        except OperationalError:
-            print("Wrong Username Or Password!! dbdwh_engine (Error Code : OperationalError)")
-            exit()
-        except InterfaceError:
-            print("Host Not Found !! dbdwh_engine (Error Code : InterfaceError)")
-            exit()
-        except ProgrammingError:
-            print("Database Not Found !! dbdwh_engine (Error Code : ProgrammingError)")
-            exit()
+    #     try:
+    #         #Test Connection dbdwh
+    #         dbdwh_engine = sqlalchemy.create_engine(connection_dbdwh)
+    #         dbdwh_engine.connect()
+    #         df_esql.to_sql("tdimjobgrade",con = connection_dbdwh, if_exists = 'append', index = False)
+    #         print("Successfully Insert To tdimjobgrade")
+    #         #Close Connection
+    #         dbdemo_engine.dispose()
+    #         dbdwh_engine.dispose()
+    #     except OperationalError:
+    #         print("Wrong Username Or Password!! dbdwh_engine (Error Code : OperationalError)")
+    #         exit()
+    #     except InterfaceError:
+    #         print("Host Not Found !! dbdwh_engine (Error Code : InterfaceError)")
+    #         exit()
+    #     except ProgrammingError:
+    #         print("Database Not Found !! dbdwh_engine (Error Code : ProgrammingError)")
+    #         exit()
         
     except OperationalError:
         print("Wrong Username Or Password!! dbdemo_engine (Error Code : OperationalError)")
